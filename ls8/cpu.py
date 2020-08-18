@@ -7,43 +7,53 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        self.ram = [0] * 32
+        self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0 
-        self.reg = 0xF4
+        # self.reg[0] = 0xF4
 
     def load(self, filename=None):
         """Load a program into memory."""
 
         # For now, we've just hardcoded a program:
+        address = 0
+
+        program = [
+            # From print8.ls8
+            0b10000010, # LDI R0,8
+            0b00000000,
+            0b00001000,
+            0b01000111, # PRN R0
+            0b00000000,
+            0b00000001, # HLT
+        ]
 
         if filename:
             with open(filename) as f:
-                address = 0
-            for line in f:
-                value = line.split('#')[0].strip()
-                if value == "":
-                    continue
+                for line in f:
+                    value = line.split('#')[0].strip()
+                    if value == "":
+                        continue
 
-                else:
-                    instruction= int(value, 2)
+                    # else:
+                    instruction = int(value, 2)
                     self.ram[address] = instruction
                     address += 1
 
+        # else:
+
+        #     program = [
+        #         # From print8.ls8
+        #         0b10000010, # LDI R0,8
+        #         0b00000000,
+        #         0b00001000,
+        #         0b01000111, # PRN R0
+        #         0b00000000,
+        #         0b00000001, # HLT
+        #     ]
         else:
-
-            program = [
-                # From print8.ls8
-                0b10000010, # LDI R0,8
-                0b00000000,
-                0b00001000,
-                0b01000111, # PRN R0
-                0b00000000,
-                0b00000001, # HLT
-            ]
-
-        for address, instruction in enumerate(program):
-            self.ram[address] = instruction
+            for address, instruction in enumerate(program):
+                self.ram[address] = instruction
 
 
     def alu(self, op, reg_a, reg_b):
@@ -120,6 +130,7 @@ class CPU:
 
             elif ir == LDI:
                 self.reg[oper_a] = oper_b
+                self.pc += 3
 
             elif ir == PRN:
                 print(self.reg[oper_a])
