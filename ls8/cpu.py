@@ -12,7 +12,7 @@ class CPU:
         self.pc = 0 
         self.reg = 0xF4
 
-    def load(self):
+    def load(self, filename=None):
         """Load a program into memory."""
 
         # For now, we've just hardcoded a program:
@@ -62,11 +62,11 @@ class CPU:
         else:
             raise Exception("Unsupported ALU operation")
 
-        def ram_read(self, address):
-            return self.ram[address]
+    def ram_read(self, address):
+        return self.ram[address]
 
-        def ram_write(self, value, address):
-            self.ram[address] = value
+    def ram_write(self, value, address):
+        self.ram[address] = value
 
     def trace(self):
         """
@@ -88,5 +88,109 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
+
+        HLT = 0b00000001
+        LDI = 0b10000010
+        PRN = 0b01000111
+        MUL = 0b10100010
+        PUSH = 0b01000101
+        POP = 0b01000110
+        ADD = 0b10100000
+        CALL = 0b01010000
+        RET = 0b00010001
+        NOP = 0b00000000
+        CMP = 0b10100111
+        JMP = 0b01010100
+        JEQ = 0b01010101
+        JNE = 0b01010110
         
+        SP = 7
         
+        running = True
+
+        while running:
+            ir = self.ram[self.pc]
+
+            oper_a = self.ram[self.pc + 1]
+            oper_b = self.ram[self.pc + 2]
+
+            if ir == HLT:
+                running = False
+                self.pc += 1
+
+            elif ir == LDI:
+                self.reg[oper_a] = oper_b
+
+            elif ir == PRN:
+                print(self.reg[oper_a])
+                self.pc += 2
+
+            elif ir == MUL:
+                product = self.reg[oper_a] * self.reg[oper_b]
+                self.reg[oper_a] = product
+                self.pc += 3
+
+            elif ir == PUSH:
+                self.reg[SP] -= 1
+                self.ram_write(self.reg[oper_a], self.reg[SP])
+
+            elif ir == POP:
+                value = self.ram_read(self.reg[SP])
+                self.reg[oper_a] = value
+                self.reg[SP] += 1
+                self.pc += 2
+
+            elif ir == ADD:
+                add = self.reg[oper_a] + self.reg[oper_b]
+                self.reg[oper_a] = add
+                self.pc += 3
+
+            elif ir == NOP:
+                self.pc += 1
+                continue
+
+            elif ir == CALL:
+                self.reg[SP] -= 1
+                self.ram_write(self.pc + 2, self.reg[SP])
+
+            elif ir == RET:
+                self.pc = self.ram[self.reg[SP]]
+                self.reg[SP] += 1
+
+            elif ir == CMP:
+                self.alu("CMP", oper_a, oper_b)
+                self.pc += 3
+
+            elif ir == JMP:
+                self.pc == self.reg[oper_a]
+                break
+
+            elif ir == JEQ:
+                if (self.flag & HLT) == 1:
+                    self.pc = self.reg[oper_a]
+                else:
+                    self.pc += 2
+
+            elif ir == JNE:
+                if (self.flag & HLT) == 0:
+                    self.pc = self.reg[oper_a]
+                else:
+                    self.pc += 2
+
+            else:
+                print(f"Unknown instructions {ir} at address {self.pc}" )
+                self.pc += 1
+
+            ###### TEST ########
+
+if __name__ == '__main__':
+    LS8 = CPU()
+    LS8.load()
+    for i in range(9):
+        print(LS8.ram_read(i))
+
+    LS8.ram_write(0, 15)
+
+    print('\n')
+    print(LS8.ram_read(0))
+    print('\n')
