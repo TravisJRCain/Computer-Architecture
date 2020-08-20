@@ -144,6 +144,7 @@ class CPU:
             elif ir == CALL:
                 self.reg[SP] -= 1
                 self.ram_write(self.pc + 2, self.reg[SP])
+                self.pc = self.reg[oper_a]
 
             elif ir == RET:
                 self.pc = self.ram[self.reg[SP]]
