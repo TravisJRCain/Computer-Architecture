@@ -39,6 +39,14 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
+        AND = 0b10101000
+        OR = 0b10101010
+        XOR = 0b10101011
+        NOT = 0b01101001
+        SHL = 0b10101100
+        SHR = 0b10101101
+        MOD = 0b10100100
+
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
 
@@ -47,6 +55,16 @@ class CPU:
 
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
+        
+        elif op == "CMP":
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.flag = 0b00000001
+            
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.flag = 0b10000010
+            
+            else:
+                self.flag = 0b00000100
 
         #elif op == "SUB": etc
         else:
